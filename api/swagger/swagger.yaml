@@ -1,0 +1,171 @@
+swagger: "2.0"
+info:
+  version: "0.1.2"
+  title: SMK API
+# during dev, should point to your local machine
+host: demoapi.smk.dk
+tags:
+- name: Artworks
+  description: Access the collection
+# basePath prefixes all resource paths 
+basePath: /api
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+  - image/jpeg
+paths:
+  /get_image:
+    x-swagger-router-controller: get_image_by_ref_num
+    get:
+      tags:
+      - Artworks
+      summary: Get artworks image
+      consumes:
+      - application/json
+      operationId: getimgbyrefnum
+      parameters:
+        - name: refnum
+          in: query
+          description: Reference number of the requested artwork
+          required: true
+          type: string
+        - name: size
+          in: query
+          description: Size of the resulting image ("thumb", "medium", "large")
+          required: false
+          default: "thumb"
+          type: string
+      produces:
+      - image/jpeg
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /get_notice:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: get_object_by_ref_num
+    get:
+      tags:
+      - Artworks
+      summary: Get artworks notice
+      description: Returns artwork(s)' data matching the queried reference number
+      # used as the method name of the controller
+      operationId: getobjbyrefnum
+      parameters:
+        - name: refnum
+          in: query
+          description: reference number of the requested artwork (by default, all artworks are requested)
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: Specifies an offset (by default, 0) into the responses at which content should begin been displayed.
+          default: 0
+          required: false
+          type: integer
+        - name: rows
+          in: query
+          description: Controls how many rows of responses are displayed at a time (default value, 10)
+          required: false
+          default: 10
+          type: integer
+       
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrCollectionSpaceBasicResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  SolrCollectionSpaceBasicResponse:
+    required:
+      - responseHeader
+      - response
+    properties:
+      responseHeader:
+        type: object
+        required:
+        - params
+        properties:
+          params:
+            type: object
+            required:
+            - q
+            - rows
+            properties:
+              q:
+                type: string
+              rows:
+                type: string
+      response:
+        type: object
+        required:
+        - numFound
+        - start
+        - docs
+        properties:
+          numFound:
+            type: integer
+          start:
+            type: integer
+          docs:
+            type: array
+            items:
+              $ref: "#/definitions/SolrCSJsonObjectDescription"
+  SolrCSJsonObjectDescription:
+    required:
+      - id
+      - title_first
+    properties:
+      id:
+        type: string
+      title_first:
+        type: string
+      artist_name:
+        type: array
+        items:
+          type: string
+  SolrBasicResponse:
+    required:
+      - responseHeader
+      - response
+    properties:
+      responseHeader:
+        type: object
+        required:
+        - status
+        properties:
+          status:
+            type : integer
+      response:
+        type: object
+        required:
+        - numFound
+        properties:
+          numFound:
+            type : integer
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
