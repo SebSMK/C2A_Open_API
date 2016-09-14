@@ -54,7 +54,7 @@ paths:
             $ref: "#/definitions/ErrorResponse"
   /get_notice:
     # binds a127 app logic to a route
-    x-swagger-router-controller: get_object_by_ref_num
+    x-swagger-router-controller: get_notice_by_ref_num
     get:
       tags:
       - Artworks
