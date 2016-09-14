@@ -4,43 +4,37 @@ var server = require('../../../app');
 
 describe('controllers', function() {
 
-  describe('hello_world', function() {
+  describe('get_notice', function() {
 
-    describe('GET /hello', function() {
-
+    describe('GET /api/get_notice', function() {
+      
       it('should return a default string', function(done) {
 
         request(server)
-          .get('/hello')
+          .get('/api/get_notice')          
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200)
           .end(function(err, res) {
             should.not.exist(err);
-
-            res.body.should.eql('Hello, stranger!');
-
             done();
           });
-      });
-
+      });   
+      
       it('should accept a name parameter', function(done) {
 
         request(server)
-          .get('/hello')
-          .query({ name: 'Scott'})
+          .get('/api/get_notice')
+          .query({ refnum: 'kms1'})
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200)
           .end(function(err, res) {
             should.not.exist(err);
-
-            res.body.should.eql('Hello, Scott!');
-
             done();
           });
       });
-
+      
     });
 
   });
