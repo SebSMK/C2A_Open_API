@@ -18,7 +18,7 @@ SwaggerExpress.create(config, function(err, swaggerExpress) {
   // install middleware
   swaggerExpress.register(app);
 
-  var port = process.env.PORT || 10010;
+  var port = process.env.NODE_ENV != "production" ? 10011 : process.env.PORT || 10010;
   console.log('OpenAPI started in ' + process.env.NODE_ENV + ' mode on port ' + port)
   app.listen(port);  
 });
