@@ -1,9 +1,11 @@
 swagger: "2.0"
 info:
-  version: "0.1.2"
+  version: "0.1.3"
   title: SMK API
 # during dev, should point to your local machine
-host: demoapi.smk.dk
+host: 172.20.1.203:10011
+# in production, should point to the front end server
+# host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access the collection
@@ -51,7 +53,11 @@ paths:
         '404':
           description: Not Found
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/SolrErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /get_notice:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_notice_by_ref_num
@@ -61,7 +67,7 @@ paths:
       summary: Get artworks notice
       description: Returns artwork(s)' data matching the queried reference number
       # used as the method name of the controller
-      operationId: getobjbyrefnum
+      operationId: getnoticebyrefnum
       parameters:
         - name: refnum
           in: query
@@ -91,7 +97,35 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/SolrErrorResponse"
+  /get_notice_by_solr:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: get_notice_by_ref_num
+    get:
+      tags:
+      - Artworks
+      summary: Get artworks notice through a solr query 
+      description: Returns artwork(s)' data matching the solr query
+      # used as the method name of the controller
+      operationId: getnoticebysolr
+      parameters:
+        - name: solr_string
+          in: query
+          description: reference number of the requested artwork (by default, all artworks are requested)
+          required: true
+          default: "q=id:KMS1*&start=0&rows=5&fq=object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]&fq=object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]&fl=id, title_first,object_production_date_latest,object_production_date_earliest&sort= object_production_date_latest asc&facet=true&facet.limit=-1&facet.mincount=1&facet.field=artist_surname_firstname"
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrCollectionSpaceBasicResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
@@ -110,7 +144,6 @@ definitions:
             type: object
             required:
             - q
-            - rows
             properties:
               q:
                 type: string
@@ -169,3 +202,9 @@ definitions:
     properties:
       message:
         type: string
+  SolrErrorResponse:
+    required:
+      - error
+    properties:
+      error:
+        type: object

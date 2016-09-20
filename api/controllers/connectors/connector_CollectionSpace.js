@@ -69,11 +69,10 @@ var connector_CollectionSpace = {
         
         client.get('select', query, function(err, obj) {
 
-            if (err) {
-                //res[self.config.id] = err;
-                deferred.reject(err);
-            } else { 
-                //res[self.config.id] = obj;
+            if (err) {                
+                var solr_client_err_message = err.message.split("\r\n")[0];                                                
+                deferred.reject(JSON.parse(solr_client_err_message));
+            } else {                 
                 deferred.resolve(obj);
             }
         });

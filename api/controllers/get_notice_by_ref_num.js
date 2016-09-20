@@ -11,9 +11,10 @@
   It is a good idea to list the modules that your application depends on in the package.json in the project root
  */
 var util = require('util'), 
-  solr = require('solr-client'),
   Q = require('q'),
-  connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
+  connector_CollectionSpace = require('./connectors/connector_CollectionSpace'),
+  proxy = require('./connectors/proxy'),
+  url = require('url'); //// UNINSTALLLLLLLLLLLLLLLLLLLLLLLLL !!!!!!!!!!!
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -28,16 +29,90 @@ var util = require('util'),
   we specify that in the exports of this module that 'hello' maps to the function named 'hello'
  */
 module.exports = {
-  getobjbyrefnum: getobjbyrefnum
+  getnoticebyrefnum: getnoticebyrefnum,
+  getnoticebysolr: getnoticebysolr
 };
 
-/*
-  Functions in a127 controllers used for operations should take two parameters:
+function getnoticebysolr(req, res) {
+  
+  var query = req.swagger.params.solr_string.value.split("&");
+  var params = extractSolrParams(query);
+  //var query = url.parse(req.swagger.params.solr_string.value, true).query; 
+  
+  var config =  {
+        id: 'CollectionSpace',
+        connector: connector_CollectionSpace,
+        host: 'csdev-seb-02',
+        port: 8983,
+        core: '/solr/dev_DAM_SAFO',
+        query:{
+          def: {                                   
+            'wt': 'json',
+            'indent': true,
+            'json.nl': 'map'            
+          },
+          fixed: {
+            //'q': '%1$s',            
+            //'qf': 'id_lower',            
+            //'fl': '*, score',
+            'fl': 'id, artist*, title*, obj*, mat*, score', 
+            'defType': 'edismax'
+          },
+          exclude: ['fq']
+        },
+        // proxy
+        proxy:{
+      	   options: {
+      	      validHttpMethods: ['GET'],
+      	      invalidParams: ['qt', 'stream']
+      	    },
+            mapping:{
+              'solr-example/dev_SAFO/select': connector_CollectionSpace
+            }    
+        }
+    };
+  
+  //connector_CollectionSpace.setconfig(config); 
+  if (proxy.validateRequest(params, config)){
+    console.log('ACCESS ALLOWED: ' + JSON.stringify(params));
+    
+    connector_CollectionSpace.handler(params, false)  
+    .then(function(result){                
+      console.log(result);
+      res.json(result);       
+    })
+    .catch(function (error) {        
+      console.log(error);
+      res.status(error.error.code).json(error);             
+    });    
+  }else{
+    var err = 'ACCESS DENIED: ' + JSON.stringify(params);
+    console.log(err);
+    res.status(403).json(err); 
+  }      
+}
 
-  Param 1: a handle to the request object
-  Param 2: a handle to the response object
- */
-function getobjbyrefnum(req, res) {
+function extractSolrParams(request) {    
+      var solrQ = {};
+      //var mock = [{q:'*:*'}, {fq: "object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]"}, {fq: "object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]"}];
+      request.forEach(function(item, index){
+        var param = item.split('=')[0];
+        var value = item.split('=').length > 0 ? item.split('=')[1] : undefined;
+        if (solrQ[param] == undefined){
+          solrQ[param] = value;
+        }else{
+          if ( typeof(solrQ[param]) === 'string' ){
+            solrQ[param] = [solrQ[param], value];            
+          }else{            
+            solrQ[param] = [solrQ[param]].concat([value]);          
+          }                    
+        }                       
+      })
+      //return mock;
+      return solrQ;               
+};   
+
+function getnoticebyrefnum(req, res) {
   
   var query = {
         q: req.swagger.params.refnum.value ? util.format('id:%s', req.swagger.params.refnum.value.toUpperCase()) : '*:*',
@@ -75,7 +150,9 @@ function getobjbyrefnum(req, res) {
         res.json(result);       
       })
       .catch(function (error) {
-        console.log(err);
-        res.json(error);        
+        console.log(error);
+        res.status(error.error.code).json(error);        
       });    
 }
+
+

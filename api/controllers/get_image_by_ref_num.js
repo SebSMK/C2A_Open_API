@@ -100,7 +100,8 @@ function getimgbyrefnum(req, res) {
       })
       .catch(function (error) {
         console.log(err);
-        res.json(error);        
+        console.log(error);
+        res.status(error.error.code).json(error);        
       });  
   
 }
