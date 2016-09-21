@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "0.1.3"
+  version: "0.1.5"
   title: SMK API
 # during dev, should point to your local machine
 host: 172.20.1.203:10011
@@ -24,8 +24,102 @@ produces:
   - application/json
   - image/jpeg
 paths:
+  /get_tags:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: get_tags
+    get:
+      tags:
+      - Statistics
+      summary: Get statistics on keywords used on SMK's website
+      description: Returns the number of results of the keywords
+      # used as the method name of the controller
+      operationId: gettags
+      parameters:
+        - name: refnum
+          in: query
+          description: Search tags linked to an artwork
+          required: false
+          default: "kms1"
+          type: string
+        - name: sort
+          in: query
+          description: Sorting of the results
+          required: false
+          default: "last_update desc"
+          type: string
+        - name: start
+          in: query
+          description: Specifies an offset (by default, 0) into the responses at which content should begin been displayed.
+          default: 0
+          required: false
+          type: integer
+        - name: rows
+          in: query
+          description: Controls how many rows of responses are displayed at a time (default value, 10)
+          required: false
+          default: 10
+          type: integer
+       
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
+  /get_stats:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: get_stats
+    get:
+      tags:
+      - Statistics
+      summary: Get statistics on keywords used on SMK's website
+      description: Returns the number of results of the keywords
+      # used as the method name of the controller
+      operationId: getstats
+      parameters:
+        - name: keyword
+          in: query
+          description: Search on a specific keyword
+          required: false
+          default: "*krøyer*"
+          type: string
+        - name: sort
+          in: query
+          description: Sorting of the results
+          required: false
+          default: "last_update desc"
+          type: string
+        - name: start
+          in: query
+          description: Specifies an offset (by default, 0) into the responses at which content should begin been displayed.
+          default: 0
+          required: false
+          type: integer
+        - name: rows
+          in: query
+          description: Controls how many rows of responses are displayed at a time (default value, 10)
+          required: false
+          default: 10
+          type: integer
+       
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /get_image:
-    x-swagger-router-controller: get_image_by_ref_num
+    x-swagger-router-controller: get_image
     get:
       tags:
       - Artworks
@@ -38,6 +132,7 @@ paths:
           in: query
           description: Reference number of the requested artwork
           required: true
+          default: "kms1"
           type: string
         - name: size
           in: query
@@ -60,7 +155,7 @@ paths:
             $ref: "#/definitions/SolrErrorResponse"
   /get_notice:
     # binds a127 app logic to a route
-    x-swagger-router-controller: get_notice_by_ref_num
+    x-swagger-router-controller: get_notice
     get:
       tags:
       - Artworks
@@ -100,7 +195,7 @@ paths:
             $ref: "#/definitions/SolrErrorResponse"
   /get_notice_by_solr:
     # binds a127 app logic to a route
-    x-swagger-router-controller: get_notice_by_ref_num
+    x-swagger-router-controller: get_notice
     get:
       tags:
       - Artworks
@@ -130,6 +225,35 @@ paths:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
 definitions:
+  SolrResponse:
+    required:
+      - responseHeader
+      - response
+    properties:
+      responseHeader:
+        type: object
+        required:
+        - params
+        properties:
+          params:
+            type: object
+            required:
+            - q
+            properties:
+              q:
+                type: string
+              rows:
+                type: string
+      response:
+        type: object
+        required:
+        - numFound
+        - start
+        properties:
+          numFound:
+            type: integer
+          start:
+            type: integer
   SolrCollectionSpaceBasicResponse:
     required:
       - responseHeader

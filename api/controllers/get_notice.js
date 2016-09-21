@@ -13,8 +13,7 @@
 var util = require('util'), 
   Q = require('q'),
   connector_CollectionSpace = require('./connectors/connector_CollectionSpace'),
-  proxy = require('./connectors/proxy'),
-  url = require('url'); //// UNINSTALLLLLLLLLLLLLLLLLLLLLLLLL !!!!!!!!!!!
+  proxy = require('./connectors/proxy');
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -57,8 +56,8 @@ function getnoticebysolr(req, res) {
             //'fl': '*, score',
             'fl': 'id, artist*, title*, obj*, mat*, score', 
             'defType': 'edismax'
-          },
-          exclude: ['fq']
+          }
+          //exclude: ['fq']
         },
         // proxy
         proxy:{

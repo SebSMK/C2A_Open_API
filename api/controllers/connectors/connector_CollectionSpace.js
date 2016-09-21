@@ -2,6 +2,53 @@ var Q = require('q'),
     solr = require('solr-client'),
     util = require('util');
 
+/*TO DO: INSTANTIATE CONNECTOR
+SolrConnector = (function(){
+
+     /**
+     * Constructor
+     **/
+/*     
+    function SolrConnector (host, path, imgsize) {        
+        console.log("IIPProxy Constructor:", host + path);
+        console.log("IIPProxy Constructor - image size:", imgsize);
+        this.host = host;      
+        this.path = path;
+        this.imgsize = imgsize;
+    }          
+    
+    SolrConnector.prototype.queryhandler = function(params, use_def_query){
+       var query = {};
+       if (use_def_query) {                   
+            
+            // set variables elements of the query
+            query = JSON.parse(JSON.stringify(this.config.query.def)); // cloning JSON            
+            for (var p in params){              
+              if(this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1) // only if the parameter is not in the exclude list
+                query[p] = params[p];                                                                         
+            } 
+            
+            // set fixed elements of the query            
+            for (var f in this.config.query.fixed){              
+              switch(f) {
+                case 'q':
+                  query[f] = util.format(this.config.query.fixed[f], params[f].toString()); 
+                  break;
+                default:
+                  query[f] = this.config.query.fixed[f];                                                  
+              }                                                           
+            } 
+                                     
+        } else {
+            query = params;
+        }            
+        return query;
+    };
+            
+    return SolrConnector;
+})();
+*/
+
 var connector_CollectionSpace = {
 
     config: {
@@ -33,9 +80,9 @@ var connector_CollectionSpace = {
             
             // set variables elements of the query
             query = JSON.parse(JSON.stringify(this.config.query.def)); // cloning JSON            
-            for (var p in params){              
-              if(this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1) // only if the parameter is not in the exclude list
-                query[p] = params[p];                                                                         
+            for (var p in params){
+              if(this.config.query.exclude === undefined || (this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1)) // only if the parameter is not in the exclude list
+                query[p] = params[p];                                                                                
             } 
             
             // set fixed elements of the query            
