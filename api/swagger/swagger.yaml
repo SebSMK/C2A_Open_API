@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "0.1.5"
+  version: "0.1.7"
   title: SMK API
 # during dev, should point to your local machine
 host: 172.20.1.203:10011
@@ -8,7 +8,11 @@ host: 172.20.1.203:10011
 # host: demoapi.smk.dk
 tags:
 - name: Artworks
-  description: Access the collection
+  description: Access to artworks' date collection
+- name: Images
+  description: Access to artworks' images
+- name: Statistics
+  description: Access to website's search keywords
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -23,8 +27,9 @@ consumes:
 produces:
   - application/json
   - image/jpeg
+  - text/html
 paths:
-  /get_tags:
+  /tags:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_tags
     get:
@@ -39,7 +44,6 @@ paths:
           in: query
           description: Search tags linked to an artwork
           required: false
-          default: "kms1"
           type: string
         - name: sort
           in: query
@@ -71,7 +75,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /get_stats:
+  /stats:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_stats
     get:
@@ -118,11 +122,12 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /get_image:
+  /images:
     x-swagger-router-controller: get_image
     get:
       tags:
       - Artworks
+      - Images
       summary: Get artworks image
       consumes:
       - application/json
@@ -153,7 +158,36 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /get_notice:
+  /zoom:
+    x-swagger-router-controller: get_zoom
+    get:
+      tags:
+      - Artworks
+      - Images
+      summary: Zoom in artworks
+      consumes:
+      - application/json
+      operationId: getzoom
+      parameters:
+        - name: refnum
+          in: query
+          description: Reference number of the requested artwork
+          required: true
+          default: "kms1"
+          type: string
+      produces:
+      - text/html
+      - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/HtmlResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
+  /artworks:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_notice
     get:
@@ -193,7 +227,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /get_notice_by_solr:
+  /artworks_solr:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_notice
     get:
@@ -225,6 +259,8 @@ paths:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
 definitions:
+  HtmlResponse:
+    type: string
   SolrResponse:
     required:
       - responseHeader

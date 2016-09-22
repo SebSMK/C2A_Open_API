@@ -33,7 +33,7 @@ module.exports = {
 function gettags(req, res) {
   
   var query = {
-        q: req.swagger.params.refnum.value ? util.format("picture_url:*%s.jpg OR picture_url:*%s.jpg ", req.swagger.params.refnum.value.toUpperCase(), req.swagger.params.refnum.value.toLowerCase())  : '*:*',
+        q: req.swagger.params.refnum.value ? util.format("invnumber:%s OR invnumber:%s", req.swagger.params.refnum.value.toUpperCase(), req.swagger.params.refnum.value.toLowerCase())  : '*:*',
         start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
         rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
         sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "last_update desc"
@@ -42,9 +42,9 @@ function gettags(req, res) {
   var config =  {
         id: 'CollectionSpace',
         connector: connector_CollectionSpace,
-        host: 'solr-02.smk.dk',
-        port: 8080,
-        core: '/solr-h4dk/prod_search_pict',
+        host: 'csdev-seb-02',
+        port: 8983,
+        core: '/solr/dev_TAGS_PIC',
         query:{
           def: {                                   
             'wt': 'json',
@@ -55,7 +55,7 @@ function gettags(req, res) {
             'fq': 'prev_q:[* TO *] OR prev_facet:[* TO *]',            
             //'qf': 'id_lower',            
             //'fl': '*, score',
-            'fl': 'last_update, prev_q, prev_facet, language, user', 
+            'fl': 'invnumber, last_update, prev_q, prev_facet, language, user', 
             //'defType': 'edismax'
           }
           //exclude: ['fq']
