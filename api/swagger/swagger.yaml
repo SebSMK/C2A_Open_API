@@ -3,9 +3,9 @@ info:
   version: "0.1.7"
   title: SMK API
 # during dev, should point to your local machine
-host: 172.20.1.203:10011
+# host: 172.20.1.203:10011
 # in production, should point to the front end server
-# host: demoapi.smk.dk
+host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access to artworks' date collection
