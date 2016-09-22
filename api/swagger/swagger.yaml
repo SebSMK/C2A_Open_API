@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "0.1.7"
+  version: "1.0.0"
   title: SMK API
 # during dev, should point to your local machine
 # host: 172.20.1.203:10011
@@ -8,11 +8,11 @@ info:
 host: demoapi.smk.dk
 tags:
 - name: Artworks
-  description: Access to artworks' date collection
+  description: Access to artworks' data
 - name: Images
   description: Access to artworks' images
-- name: Statistics
-  description: Access to website's search keywords
+- name: Keywords
+  description: Access to website's search keywords statistics
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -34,42 +34,23 @@ paths:
     x-swagger-router-controller: get_tags
     get:
       tags:
-      - Statistics
-      summary: Get statistics on keywords used on SMK's website
-      description: Returns the number of results of the keywords
+      - Keywords
+      summary: Get tags and artworks associated to a given keyword 
+      description: Returns tags linked to an artwork by SMK's website users
       # used as the method name of the controller
       operationId: gettags
       parameters:
-        - name: refnum
+        - name: keyword
           in: query
-          description: Search tags linked to an artwork
+          description: Can be an artwork reference id (e.g. kms1), an artist name (e.g. krøyer), a word (e.g. båd) etc.
           required: false
           type: string
-        - name: sort
-          in: query
-          description: Sorting of the results
-          required: false
-          default: "last_update desc"
-          type: string
-        - name: start
-          in: query
-          description: Specifies an offset (by default, 0) into the responses at which content should begin been displayed.
-          default: 0
-          required: false
-          type: integer
-        - name: rows
-          in: query
-          description: Controls how many rows of responses are displayed at a time (default value, 10)
-          required: false
-          default: 10
-          type: integer
-       
       responses:
         "200":
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/SolrResponse"
+            $ref: "#/definitions/SolrFacetResponse"
         # responses may fall through to errors
         default:
           description: Error
@@ -80,21 +61,20 @@ paths:
     x-swagger-router-controller: get_stats
     get:
       tags:
-      - Statistics
-      summary: Get statistics on keywords used on SMK's website
-      description: Returns the number of results of the keywords
+      - Keywords
+      summary: Get users requests associated to a given keywords
+      description: Returns the detail of all the search requests made by SMK's website users that contain the given keyword
       # used as the method name of the controller
       operationId: getstats
       parameters:
         - name: keyword
           in: query
-          description: Search on a specific keyword
+          description: Can be an artwork reference id (e.g. kms1), an artist name (e.g. krøyer), a word (e.g. båd) etc.
           required: false
-          default: "*krøyer*"
           type: string
         - name: sort
           in: query
-          description: Sorting of the results
+          description: Field on which the result will be sorted
           required: false
           default: "last_update desc"
           type: string
@@ -126,18 +106,17 @@ paths:
     x-swagger-router-controller: get_image
     get:
       tags:
-      - Artworks
       - Images
       summary: Get artworks image
+      description: Returns jpeg of a given artwork
       consumes:
       - application/json
       operationId: getimgbyrefnum
       parameters:
         - name: refnum
           in: query
-          description: Reference number of the requested artwork
+          description: Reference number of the requested artwork (e.g. kms1)
           required: true
-          default: "kms1"
           type: string
         - name: size
           in: query
@@ -162,18 +141,17 @@ paths:
     x-swagger-router-controller: get_zoom
     get:
       tags:
-      - Artworks
       - Images
       summary: Zoom in artworks
+      description: Returns html code of a zoom viewer that can be embeded in a webpage
       consumes:
       - application/json
       operationId: getzoom
       parameters:
         - name: refnum
           in: query
-          description: Reference number of the requested artwork
+          description: Reference number of the requested artwork (e.g. kms3123)
           required: true
-          default: "kms1"
           type: string
       produces:
       - text/html
@@ -193,15 +171,21 @@ paths:
     get:
       tags:
       - Artworks
-      summary: Get artworks notice
-      description: Returns artwork(s)' data matching the queried reference number
+      summary: Get artworks' notice
+      description: Returns artwork's notice matching a reference number
       # used as the method name of the controller
       operationId: getnoticebyrefnum
       parameters:
         - name: refnum
           in: query
-          description: reference number of the requested artwork (by default, all artworks are requested)
+          description: reference number of the requested artwork (e.g. kms1 - by default, all artworks are requested)
           required: false
+          type: string
+        - name: sort
+          in: query
+          description: Field on which the results will be sorted (e.g. "object_production_date_earliest desc" --> sorted after descendent production date or "artist_first_name asc" --> sorted after alphabetic ascendent artist name)
+          required: false
+          default: "object_production_date_earliest desc"
           type: string
         - name: start
           in: query
@@ -215,6 +199,17 @@ paths:
           required: false
           default: 10
           type: integer
+        - name: production_date_from
+          in: query
+          description: Lower bound to the year of production of the artwork (e.g. 1900 --> all artworks created after 1900)
+          required: false
+          type: string       
+        - name: production_date_to
+          in: query
+          description: Upper bound to the year of production of the artwork (e.g. 1920 --> all artworks created before 1920)
+          required: false
+          type: string
+       
        
       responses:
         "200":
@@ -233,16 +228,16 @@ paths:
     get:
       tags:
       - Artworks
-      summary: Get artworks notice through a solr query 
-      description: Returns artwork(s)' data matching the solr query
+      summary: Get artworks' notice through a solr query
+      description: Advanced users - Returns artwork(s)' notice matching a solr query
       # used as the method name of the controller
       operationId: getnoticebysolr
       parameters:
         - name: solr_string
           in: query
-          description: reference number of the requested artwork (by default, all artworks are requested)
+          description: A solr compliant query string - Example given here returns the fields "id, title_first,object_production_date_latest,object_production_date_earliest" on all artworks produced between 1900 and 1920 which reference number starts by the string "KMS", as well as associated facet results on "artist_surname_firstname" field)
           required: true
-          default: "q=id:KMS1*&start=0&rows=5&fq=object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]&fq=object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]&fl=id, title_first,object_production_date_latest,object_production_date_earliest&sort= object_production_date_latest asc&facet=true&facet.limit=-1&facet.mincount=1&facet.field=artist_surname_firstname"
+          default: "q=id:KMS*&start=0&rows=5&fq=object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]&fq=object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]&fl=id, title_first,object_production_date_latest,object_production_date_earliest&sort= object_production_date_latest asc&facet=true&facet.limit=-1&facet.mincount=1&facet.field=artist_surname_firstname"
           type: string
       responses:
         "200":
@@ -261,6 +256,37 @@ paths:
 definitions:
   HtmlResponse:
     type: string
+  SolrFacetResponse:
+    required:
+      - responseHeader
+      - facet_counts
+    properties:
+      responseHeader:
+        type: object
+        required:
+        - params
+        properties:
+          params:
+            type: object
+      facet_counts:
+        type: object
+        required:
+        - facet_fields
+        properties:
+          facet_fields:
+            type: object
+            required:
+            - invnumber
+            - prev_q
+            - prev_facet
+            properties:
+              invnumber:
+                type: object
+              prev_q:
+                type: object
+              prev_facet:
+                type: object
+            
   SolrResponse:
     required:
       - responseHeader

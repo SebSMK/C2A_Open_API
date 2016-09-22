@@ -10,9 +10,7 @@
 
   It is a good idea to list the modules that your application depends on in the package.json in the project root
  */
-var util = require('util'), 
-  Q = require('q'),
-  connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
+var connector = require('./connectors/connector_users_tags');
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -31,6 +29,51 @@ module.exports = {
 };
 
 function gettags(req, res) {
+  
+  var query = {
+        q: req.swagger.params.keyword.value ? req.swagger.params.keyword.value : '*:*'        
+    };
+  
+  var config =  {
+        id: 'users_tags',
+        //connector: connector_users_tags,
+        host: 'csdev-seb-02',
+        port: 8983,
+        path: '/solr/dev_TAGS_PIC',        
+        query:{
+          def: {                                                
+            'wt': 'json',
+            'indent': true,
+            'json.nl': 'map'            
+          },
+          fixed: {
+            'q': '*:*',
+            'fq': '{!join from=invnumber to=invnumber}prev_q:(%1$s) OR prev_q:(%1$s*) OR prev_q:(*%1$s) OR prev_q:(*%1$s*) OR invnumber:%1$s',
+            'facet': true,
+            'facet.field': ['prev_q', 'prev_facet', 'invnumber'],
+            'facet.sort': 'count',
+            'facet.mincount': 1,
+            'facet.limit': 40,
+            'rows': '0'
+          }          
+        }
+    };
+  
+  connector.setconfig(config);
+    
+  connector.handler(query, true)
+      .then(function(result){                
+        console.log(result);
+        res.json(result);       
+      })
+      .catch(function (error) {
+        console.log(error);
+        res.status(error.error.code).json(error);        
+      });    
+}
+
+/*
+function gettags_v1(req, res) {
   
   var query = {
         q: req.swagger.params.refnum.value ? util.format("invnumber:%s OR invnumber:%s", req.swagger.params.refnum.value.toUpperCase(), req.swagger.params.refnum.value.toLowerCase())  : '*:*',
@@ -52,10 +95,16 @@ function gettags(req, res) {
             'json.nl': 'map'            
           },
           fixed: {
-            'fq': 'prev_q:[* TO *] OR prev_facet:[* TO *]',            
+            //'fq': 'prev_q:[* TO *] OR prev_facet:[* TO *]',            
             //'qf': 'id_lower',            
             //'fl': '*, score',
-            'fl': 'invnumber, last_update, prev_q, prev_facet, language, user', 
+            //'fl': 'invnumber, last_update, prev_q, prev_facet, language, user',
+            'facet': true,
+            'facet.limit': -1,
+            'facet.mincount':1,
+            'facet.field': ['prev_q','prev_facet'],
+            'start': 0,
+            'rows': 0
             //'defType': 'edismax'
           }
           //exclude: ['fq']
@@ -72,9 +121,9 @@ function gettags(req, res) {
         }
     };
   
-  connector_CollectionSpace.setconfig(config);
+  connector.setconfig(config);
     
-  connector_CollectionSpace.handler(query, true)
+  connector.handler(query, true)
       .then(function(result){                
         console.log(result);
         res.json(result);       
@@ -84,5 +133,6 @@ function gettags(req, res) {
         res.status(error.error.code).json(error);        
       });    
 }
+*/
 
 

@@ -1,6 +1,6 @@
 var Q = require('q'),
     solr = require('solr-client'),
-    util = require('util');
+    sprintf = require('sprintf-js').sprintf;
 
 /*TO DO: INSTANTIATE CONNECTOR
 SolrConnector = (function(){
@@ -89,7 +89,7 @@ var connector_CollectionSpace = {
             for (var f in this.config.query.fixed){              
               switch(f) {
                 case 'q':
-                  query[f] = util.format(this.config.query.fixed[f], params[f].toString()); 
+                  query[f] = sprintf(this.config.query.fixed[f], params[f].toString()); 
                   break;
                 default:
                   query[f] = this.config.query.fixed[f];                                                  

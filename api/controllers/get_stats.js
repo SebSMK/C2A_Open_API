@@ -10,9 +10,7 @@
 
   It is a good idea to list the modules that your application depends on in the package.json in the project root
  */
-var util = require('util'), 
-  Q = require('q'),
-  connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
+var connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -33,7 +31,7 @@ module.exports = {
 function getstats(req, res) {
   
   var query = {
-        q: req.swagger.params.keyword.value ? util.format("q:%s", req.swagger.params.keyword.value) : '*:*',
+        q: req.swagger.params.keyword.value? req.swagger.params.keyword.value : '*:*',
         start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
         rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
         sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "last_update desc"
@@ -52,11 +50,15 @@ function getstats(req, res) {
             'json.nl': 'map'            
           },
           fixed: {
-            //'q': '%1$s',            
+            'q': 'q:%1$s OR q:*%1$s OR q:%1$s* OR q:*%1$s*',            
             //'qf': 'id_lower',            
             //'fl': '*, score',
             'fl': 'last_update, q, language, numfound, user, facet', 
-            //'defType': 'edismax'
+            'facet': true,
+            'facet.field': ['q', 'facet'],
+            'facet.sort': 'count',
+            'facet.mincount': 1,
+            'facet.limit': 40
           }
           //exclude: ['fq']
         },
