@@ -92,16 +92,15 @@ function getimgbyrefnum(req, res) {
           });
                                                          
         } else {
-          console.log("getimgbyrefnum - image not found :", pyrfilePath);
-          return res.status(404).send({
-            error: "getimgbyrefnum - image not found : " + pyrfilePath
-          });
+          console.log("getimgbyrefnum - image not found :", query.q);
+          var error = {error: "getimgbyrefnum - image not found : " + query.q, status: 404};
+          //return res.status(404).json(error);
+          throw error;
         }        
       })
-      .catch(function (error) {
-        console.log(err);
+      .catch(function (error) {        
         console.log(error);
-        res.status(error.error.code).json(error);        
+        res.status(error.status).json(error);        
       });  
   
 }

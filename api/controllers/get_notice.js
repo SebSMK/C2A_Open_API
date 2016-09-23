@@ -52,7 +52,7 @@ function getnoticebysolr(req, res) {
           },
           fixed: {
             //'q': '%1$s',            
-            //'qf': 'id_lower',            
+            //'qf': 'collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5',            
             //'fl': '*, score',
             'fl': 'id, artist*, title*, obj*, mat*, score', 
             //'defType': 'edismax'

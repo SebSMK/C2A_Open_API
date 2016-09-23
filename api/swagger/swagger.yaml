@@ -3,9 +3,9 @@ info:
   version: "1.0.0"
   title: SMK API
 # during dev, should point to your local machine
-# host: 172.20.1.203:10011
+host: 172.20.1.203:10011
 # in production, should point to the front end server
-host: demoapi.smk.dk
+# host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access to artworks' data
@@ -126,15 +126,12 @@ paths:
           type: string
       produces:
       - image/jpeg
+      - application/json
       responses:
         '200':
           description: OK
-        '404':
-          description: Not Found
-          schema:
-            $ref: "#/definitions/SolrErrorResponse"
         default:
-          description: Error
+          description: Image server error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
   /zoom:
@@ -222,22 +219,22 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /artworks_solr:
+  /search:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_notice
     get:
       tags:
       - Artworks
-      summary: Get artworks' notice through a solr query
-      description: Advanced users - Returns artwork(s)' notice matching a solr query
+      summary: Search the collection - solr query
+      description: Advanced users - Returns artwork(s)' notice matching the solr query
       # used as the method name of the controller
       operationId: getnoticebysolr
       parameters:
         - name: solr_string
           in: query
-          description: A solr compliant query string - Example given here returns the fields "id, title_first,object_production_date_latest,object_production_date_earliest" on all artworks produced between 1900 and 1920 which reference number starts by the string "KMS", as well as associated facet results on "artist_surname_firstname" field)
+          description: A solr compliant query string - Example given here returns the fields "id, title_first,object_production_date_latest,object_production_date_earliest" on all artworks produced between 1900 and 1920 which notice contains the word "matisse", as well as associated facet results on "artist_surname_firstname" field)
           required: true
-          default: "q=id:KMS*&start=0&rows=5&fq=object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]&fq=object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]&fl=id, title_first,object_production_date_latest,object_production_date_earliest&sort= object_production_date_latest asc&facet=true&facet.limit=-1&facet.mincount=1&facet.field=artist_surname_firstname"
+          default: "q=matisse&start=0&rows=5&fq=object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]&fq=object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]&fl=id, title_first,object_production_date_latest,object_production_date_earliest&facet=true&facet.limit=-1&facet.mincount=1&facet.field=artist_surname_firstname&defType=edismax&qf=collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5"
           type: string
       responses:
         "200":
@@ -286,7 +283,6 @@ definitions:
                 type: object
               prev_facet:
                 type: object
-            
   SolrResponse:
     required:
       - responseHeader

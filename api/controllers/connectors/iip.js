@@ -30,12 +30,20 @@ IIPProxy = (function(){
         
         request.get(uri, function (error, response, body) {
               
-              if (!error && response.statusCode == 200) {                  
-                  console.log('IIPProxy response OK - content-type:', response.headers['content-type']);                                    
-                  deferred.resolve(request(uri));                                    
+              if (!error && response.statusCode == 200) {
+                  if(response.headers['content-type'].indexOf("image") == -1){
+                    var error = "pyr file corrupted";
+                    var status = 204;
+                    console.log(util.format('IIPProxy error: %s - %s', status, error));
+                    deferred.reject({status:status , error: error, message: error});
+                  }else{
+                    console.log('IIPProxy response OK - content-type:', response.headers['content-type']);                                    
+                    deferred.resolve(request(uri));
+                  }                                                   
+                                                      
               }else{
-                console.log("IIPProxy error", error);
-                deferred.reject(util.format('IIPProxy error: %s - %s', response.statusCode, error));
+                console.log(util.format('IIPProxy error: %s - %s', response.statusCode, error));
+                deferred.reject({status:response.statusCode, error: error, message: error});                
               }
         });        
         
