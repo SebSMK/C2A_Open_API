@@ -14,7 +14,7 @@ var util = require('util'),
   solr = require('solr-client'),
   Q = require('q'),
   iipproxy = require('./connectors/iip'),
-  connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
+  SolrConnector = require('./connectors/solr');
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -56,7 +56,6 @@ function getimgbyrefnum(req, res) {
         },
   
         id: 'CollectionSpace',
-        connector: connector_CollectionSpace,
         host: 'csdev-seb-02',
         port: 8983,
         core: '/solr/dev_DAM_PIC',
@@ -76,9 +75,9 @@ function getimgbyrefnum(req, res) {
     
   var imgsize = config.IIPImageSize[req.swagger.params.size.value] !== undefined ? config.IIPImageSize[req.swagger.params.size.value] : config.IIPImageSize["thumb"];
   
-  connector_CollectionSpace.setconfig(config);
+  var solrconnector = new SolrConnector(config);
   
-  connector_CollectionSpace.handler(query, true)
+  solrconnector.handler(query, true) 
       .then(function(solrResponse){
         if (solrResponse.response.numFound > 0) {
           console.log("getimgbyrefnum - solr says:", solrResponse);                    

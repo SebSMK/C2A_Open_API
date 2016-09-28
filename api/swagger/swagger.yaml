@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "1.0.2"
+  version: "1.0.3"
   title: SMK API
 # during dev, should point to your local machine
 host: 172.20.1.203:10011

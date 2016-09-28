@@ -12,7 +12,8 @@
  */
 var util = require('util'), 
   Q = require('q'),
-  connector_CollectionSpace = require('./connectors/connector_CollectionSpace'),
+  SolrConnector = require('./connectors/solr'),
+  //connector_CollectionSpace = require('./connectors/connector_CollectionSpace'),
   proxy = require('./connectors/proxy');
 
 /*
@@ -32,6 +33,7 @@ module.exports = {
   getnoticebysolr: getnoticebysolr
 };
 
+//*** Search the collection throug a solr request
 function getnoticebysolr(req, res) {
   
   var query = req.swagger.params.solr_string.value.split("&");
@@ -39,8 +41,7 @@ function getnoticebysolr(req, res) {
   //var query = url.parse(req.swagger.params.solr_string.value, true).query; 
   
   var config =  {
-        id: 'CollectionSpace',
-        connector: connector_CollectionSpace,
+        id: 'CollectionSpace',        
         host: 'csdev-seb-02',
         port: 8983,
         core: '/solr/dev_DAM_SAFO',
@@ -66,24 +67,25 @@ function getnoticebysolr(req, res) {
       	      invalidParams: ['qt', 'stream']
       	    },
             mapping:{
-              'solr-example/dev_SAFO/select': connector_CollectionSpace
+              //'solr-example/dev_SAFO/select': connector_CollectionSpace
             }    
         }
     };
-  
-  //connector_CollectionSpace.setconfig(config); 
+   
   if (proxy.validateRequest(params, config)){
     console.log('ACCESS ALLOWED: ' + JSON.stringify(params));
     
-    connector_CollectionSpace.handler(params, false)  
-    .then(function(result){                
-      console.log(result);
-      res.json(result);       
-    })
-    .catch(function (error) {        
-      console.log(error);
-      res.status(error.error.code).json(error);             
-    });    
+    var solrconnector = new SolrConnector(config);
+  
+    solrconnector.handler(params, true) 
+      .then(function(result){                
+        console.log(result);
+        res.json(result);       
+      })
+      .catch(function (error) {
+        console.log(error);
+        res.status(error.error.code).json(error);        
+      });            
   }else{
     var err = 'ACCESS DENIED: ' + JSON.stringify(params);
     console.log(err);
@@ -91,9 +93,48 @@ function getnoticebysolr(req, res) {
   }      
 }
 
+//*** Search the collection throug a simplified and formated request
+function getnoticebyrefnum(req, res) {
+  
+  var query = {
+        q: req.swagger.params.refnum.value ? util.format('id:%s', req.swagger.params.refnum.value.toUpperCase()) : '*:*',
+        start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
+        rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
+        fq: [req.swagger.params.production_date_to.value ? util.format('object_production_date_earliest:[* TO %s-01-01T00:00:00.001Z]', req.swagger.params.production_date_to.value) : "", req.swagger.params.production_date_from.value ? util.format('object_production_date_latest:[%s-01-01T00:00:00.001Z TO *]', req.swagger.params.production_date_from.value) : ""],
+        sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "object_production_date_earliest desc"
+    };
+  var config =  {
+        id: 'CollectionSpace',
+        //connector: connector_CollectionSpace,
+        host: 'csdev-seb-02',
+        port: 8983,
+        core: '/solr/dev_DAM_SAFO',
+        query:{
+          def: {                                   
+            'wt': 'json',
+            'indent': true,
+            'json.nl': 'map'            
+          },
+          fixed: {}
+          //exclude: ['fq']
+        }
+    };
+   
+  var solrconnector = new SolrConnector(config);
+  
+    solrconnector.handler(query, true) 
+      .then(function(result){                
+        console.log(result);
+        res.json(result);       
+      })
+      .catch(function (error) {
+        console.log(error);
+        res.status(error.error.code).json(error);        
+      });            
+}
+
 function extractSolrParams(request) {    
       var solrQ = {};
-      //var mock = [{q:'*:*'}, {fq: "object_production_date_earliest:[* TO 1920-01-01T00:00:00.001Z]"}, {fq: "object_production_date_latest:[1900-01-01T00:00:00.001Z TO *]"}];
       request.forEach(function(item, index){
         var param = item.split('=')[0];
         var value = item.split('=').length > 0 ? item.split('=')[1] : undefined;
@@ -110,78 +151,5 @@ function extractSolrParams(request) {
       //return mock;
       return solrQ;               
 };   
-
-function getnoticebyrefnum(req, res) {
-  
-  var query = {
-        q: req.swagger.params.refnum.value ? util.format('id:%s', req.swagger.params.refnum.value.toUpperCase()) : '*:*',
-        start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
-        rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
-        fq: [req.swagger.params.production_date_to.value ? util.format('object_production_date_earliest:[* TO %s-01-01T00:00:00.001Z]', req.swagger.params.production_date_to.value) : "", req.swagger.params.production_date_from.value ? util.format('object_production_date_latest:[%s-01-01T00:00:00.001Z TO *]', req.swagger.params.production_date_from.value) : ""],
-        sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "object_production_date_earliest desc"
-    };
-  var config =  {
-        id: 'CollectionSpace',
-        connector: connector_CollectionSpace,
-        host: 'csdev-seb-02',
-        port: 8983,
-        core: '/solr/dev_DAM_SAFO',
-        query:{
-          def: {                                   
-            'wt': 'json',
-            'indent': true,
-            'json.nl': 'map'            
-          },
-          fixed: {
-            //'q': '%1$s',            
-            //'qf': 'id_lower',            
-            //'fl': '*, score',
-            //'fl': 'id, artist*, title*, obj*, mat*, score', 
-            //'defType': 'edismax'
-          }
-          //exclude: ['fq']
-        }
-    };
-  
-  var queryhandler = function(params, use_def_query){
-       var query = {};
-       if (use_def_query) {                   
-            
-            // set variables elements of the query
-            query = JSON.parse(JSON.stringify(this.config.query.def)); // cloning JSON            
-            for (var p in params){
-              if(this.config.query.exclude === undefined || (this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1)) // only if the parameter is not in the exclude list
-                query[p] = params[p];                                                                                
-            } 
-            
-            // set fixed elements of the query            
-            for (var f in this.config.query.fixed){              
-              switch(f) {
-                case 'q':
-                  query[f] = sprintf(this.config.query.fixed[f], params[f].toString()); 
-                  break;
-                default:
-                  query[f] = this.config.query.fixed[f];                                                  
-              }                                                           
-            } 
-                                     
-        } else {
-            query = params;
-        }            
-        return query;
-  };
-  
-  connector_CollectionSpace.setconfig(config);
-    
-  connector_CollectionSpace.handler(query, true, queryhandler)
-      .then(function(result){                
-        console.log(result);
-        res.json(result);       
-      })
-      .catch(function (error) {
-        console.log(error);
-        res.status(error.error.code).json(error);        
-      });    
-}
 
 

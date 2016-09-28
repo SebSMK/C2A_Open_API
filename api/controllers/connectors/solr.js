@@ -25,7 +25,7 @@ SolrConnector = (function(){
             // set variables elements of the query
             query = JSON.parse(JSON.stringify(this.config.query.def)); // cloning JSON            
             for (var p in params){              
-              if(this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1) // only if the parameter is not in the exclude list
+              if(this.config.query.exclude === undefined || (this.config.query.exclude !== undefined && this.config.query.exclude.indexOf(p) == -1)) // only if the parameter is not in the exclude list
                 query[p] = params[p];                                                                         
             } 
             
