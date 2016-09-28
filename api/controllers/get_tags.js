@@ -10,7 +10,8 @@
 
   It is a good idea to list the modules that your application depends on in the package.json in the project root
  */
-var connector = require('./connectors/connector_users_tags');
+var SolrConnector = require('./connectors/solr'),
+    sprintf = require('sprintf-js').sprintf;
 
 /*
  Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
@@ -24,9 +25,7 @@ var connector = require('./connectors/connector_users_tags');
   In the starter/skeleton project the 'get' operation on the '/hello' path has an operationId named 'hello'.  Here,
   we specify that in the exports of this module that 'hello' maps to the function named 'hello'
  */
-module.exports = {
-  gettags: gettags
-};
+
 
 function gettags(req, res) {
   
@@ -35,11 +34,11 @@ function gettags(req, res) {
     };
   
   var config =  {
-        id: 'users_tags',
+        id: 'tags',
         //connector: connector_users_tags,
         host: 'csdev-seb-02',
         port: 8983,
-        path: '/solr/dev_TAGS_PIC',        
+        core: '/solr/dev_TAGS_PIC',        
         query:{
           def: {                                                
             'wt': 'json',
@@ -58,10 +57,61 @@ function gettags(req, res) {
           }          
         }
     };
-  
-  connector.setconfig(config);
     
-  connector.handler(query, true)
+    var queryhandler = function(params, use_def_query){
+       var query = {};
+       if (use_def_query) {                   
+            
+            // set variables elements of the query
+            query = JSON.parse(JSON.stringify(this.config.query.def)); // cloning JSON            
+            for (var p in params){
+              switch(p) {
+                case 'wt':
+                case 'indent':
+                case 'json.nl':
+                  query[p] = params[p];
+                  break;                                                              
+              }                                                                                                         
+            }  
+            
+            // set fixed elements of the query            
+            for (var f in this.config.query.fixed){              
+              switch(f) {
+                case 'q':
+                  var q2fq = params['q'].toString() == '*:*' ? '*' : params['q'].toString(); 
+                  query['q'] = this.config.query.fixed['q'];
+                  
+                  if(params.hasOwnProperty('q'))
+                    query['fq'] = sprintf(this.config.query.fixed['fq'], q2fq);
+                                     
+                  break;
+                case 'fq':
+                  break;
+                default:
+                  query[f] = this.config.query.fixed[f];                                                  
+              }                                                           
+            }
+            
+            // if fq on id:, copy value
+            if(params.hasOwnProperty('fq')){
+              for(var i in params['fq']){
+                if(params['fq'][i].indexOf('id:') > -1){
+                  var fqparam = params['fq'][i].split(':').pop().toLowerCase(); 
+                  query['fq'] = sprintf(this.config.query.fixed['fq'], fqparam);
+                }
+                                                                      
+              }            
+            }   
+                                     
+        } else {
+            query = params;
+        }            
+        return query;
+    };
+    
+  var solrconnector = new SolrConnector(config);    
+    
+  solrconnector.handler(query, true, queryhandler)
       .then(function(result){                
         console.log(result);
         res.json(result);       
@@ -70,69 +120,8 @@ function gettags(req, res) {
         console.log(error);
         res.status(error.error.code).json(error);        
       });    
-}
+};
 
-/*
-function gettags_v1(req, res) {
-  
-  var query = {
-        q: req.swagger.params.refnum.value ? util.format("invnumber:%s OR invnumber:%s", req.swagger.params.refnum.value.toUpperCase(), req.swagger.params.refnum.value.toLowerCase())  : '*:*',
-        start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
-        rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
-        sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "last_update desc"
-    };
-  
-  var config =  {
-        id: 'CollectionSpace',
-        connector: connector_CollectionSpace,
-        host: 'csdev-seb-02',
-        port: 8983,
-        core: '/solr/dev_TAGS_PIC',
-        query:{
-          def: {                                   
-            'wt': 'json',
-            'indent': true,
-            'json.nl': 'map'            
-          },
-          fixed: {
-            //'fq': 'prev_q:[* TO *] OR prev_facet:[* TO *]',            
-            //'qf': 'id_lower',            
-            //'fl': '*, score',
-            //'fl': 'invnumber, last_update, prev_q, prev_facet, language, user',
-            'facet': true,
-            'facet.limit': -1,
-            'facet.mincount':1,
-            'facet.field': ['prev_q','prev_facet'],
-            'start': 0,
-            'rows': 0
-            //'defType': 'edismax'
-          }
-          //exclude: ['fq']
-        },
-        // proxy
-        proxy:{
-      	   options: {
-      	      validHttpMethods: ['GET'],
-      	      invalidParams: ['qt', 'stream']
-      	    },
-            mapping:{
-              'solr-example/dev_SAFO/select': connector_CollectionSpace
-            }    
-        }
-    };
-  
-  connector.setconfig(config);
-    
-  connector.handler(query, true)
-      .then(function(result){                
-        console.log(result);
-        res.json(result);       
-      })
-      .catch(function (error) {
-        console.log(error);
-        res.status(error.error.code).json(error);        
-      });    
-}
-*/
-
-
+module.exports = {
+  gettags: gettags
+};

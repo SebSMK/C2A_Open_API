@@ -43,7 +43,7 @@ SolrConnector = (function(){
             query = params;
         }            
         return query;
-    };
+    }; 
             
     return SolrConnector;
 })();

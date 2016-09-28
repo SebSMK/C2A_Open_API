@@ -4,29 +4,7 @@
  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 */
 
-/*
- Modules make it possible to import JavaScript files into your application.  Modules are imported
- using 'require' statements that give you a reference to the module.
-
-  It is a good idea to list the modules that your application depends on in the package.json in the project root
- */
-var connector_CollectionSpace = require('./connectors/connector_CollectionSpace');
-
-/*
- Once you 'require' a module you can reference the things that it exports.  These are defined in module.exports.
-
- For a controller in a127 (which this is) you should export the functions referenced in your Swagger document by name.
-
- Either:
-  - The HTTP Verb of the corresponding operation (get, put, post, delete, etc)
-  - Or the operationId associated with the operation in your Swagger document
-
-  In the starter/skeleton project the 'get' operation on the '/hello' path has an operationId named 'hello'.  Here,
-  we specify that in the exports of this module that 'hello' maps to the function named 'hello'
- */
-module.exports = {
-  getstats: getstats
-};
+var SolrConnector = require('./connectors/solr');
 
 function getstats(req, res) {
   
@@ -38,8 +16,8 @@ function getstats(req, res) {
     };
   
   var config =  {
-        id: 'CollectionSpace',
-        connector: connector_CollectionSpace,
+        id: 'stats',
+        //connector: connector_CollectionSpace,
         host: 'solr-02.smk.dk',
         port: 8080,
         core: '/solr-h4dk/prod_search_dict',
@@ -61,22 +39,12 @@ function getstats(req, res) {
             'facet.limit': 40
           }
           //exclude: ['fq']
-        },
-        // proxy
-        proxy:{
-      	   options: {
-      	      validHttpMethods: ['GET'],
-      	      invalidParams: ['qt', 'stream']
-      	    },
-            mapping:{
-              'solr-example/dev_SAFO/select': connector_CollectionSpace
-            }    
         }
     };
   
-  connector_CollectionSpace.setconfig(config);
-    
-  connector_CollectionSpace.handler(query, true)
+  var solrconnector = new SolrConnector(config);
+  
+  solrconnector.handler(query, true) 
       .then(function(result){                
         console.log(result);
         res.json(result);       
@@ -86,5 +54,9 @@ function getstats(req, res) {
         res.status(error.error.code).json(error);        
       });    
 }
+
+module.exports = {
+  getstats: getstats
+};
 
 

@@ -1,11 +1,11 @@
 swagger: "2.0"
 info:
-  version: "1.0.1"
+  version: "1.0.2"
   title: SMK API
 # during dev, should point to your local machine
-# host: 172.20.1.203:10011
+host: 172.20.1.203:10011
 # in production, should point to the front end server
-host: demoapi.smk.dk
+# host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access to artworks' data
