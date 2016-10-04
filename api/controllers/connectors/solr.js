@@ -33,7 +33,8 @@ SolrConnector = (function(){
             for (var f in this.config.query.fixed){              
               switch(f) {
                 case 'q':
-                  query[f] = sprintf(this.config.query.fixed[f], params[f].toString()); 
+                    var qval = params[f] === undefined ? '*:*' : params[f].toString(); 
+                    query[f] = sprintf(this.config.query.fixed[f], qval); 
                   break;
                 default:
                   query[f] = this.config.query.fixed[f];                                                  
