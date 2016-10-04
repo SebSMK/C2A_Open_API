@@ -9,7 +9,7 @@ var SolrConnector = require('./connectors/solr');
 function getstats(req, res) {
   
   var query = {
-        q: req.swagger.params.keyword.value? req.swagger.params.keyword.value : '*:*',
+        q: req.swagger.params.keyword.value,
         start: req.swagger.params.start.value ? req.swagger.params.start.value : 0,
         rows: req.swagger.params.rows.value ? req.swagger.params.rows.value : 10,
         sort: req.swagger.params.sort.value ? req.swagger.params.sort.value : "last_update desc"
@@ -28,7 +28,7 @@ function getstats(req, res) {
             'json.nl': 'map'            
           },
           fixed: {
-            'q': 'q:%1$s OR q:*%1$s OR q:%1$s* OR q:*%1$s*',            
+            'q': req.swagger.params.keyword.value ? 'q:%1$s OR q:*%1$s OR q:%1$s* OR q:*%1$s*' : "*:*",            
             //'qf': 'id_lower',            
             //'fl': '*, score',
             'fl': 'last_update, q, language, numfound, user, facet', 

@@ -30,7 +30,7 @@ var SolrConnector = require('./connectors/solr'),
 function gettags(req, res) {
   
   var query = {
-        q: req.swagger.params.keyword.value ? req.swagger.params.keyword.value : '*:*'        
+        q: req.swagger.params.keyword.value      
     };
   
   var config =  {
@@ -47,7 +47,7 @@ function gettags(req, res) {
           },
           fixed: {
             'q': '*:*',
-            'fq': '{!join from=invnumber to=invnumber}prev_q:(%1$s) OR prev_q:(%1$s*) OR prev_q:(*%1$s) OR prev_q:(*%1$s*) OR invnumber:%1$s',
+            'fq': req.swagger.params.keyword.value ? '{!join from=invnumber to=invnumber}prev_q:(%1$s) OR prev_q:(%1$s*) OR prev_q:(*%1$s) OR prev_q:(*%1$s*) OR invnumber:%1$s' : '*:*',
             'facet': true,
             'facet.field': ['prev_q', 'prev_facet', 'invnumber'],
             'facet.sort': 'count',
@@ -78,7 +78,7 @@ function gettags(req, res) {
             for (var f in this.config.query.fixed){              
               switch(f) {
                 case 'q':
-                  var q2fq = params['q'].toString() == '*:*' ? '*' : params['q'].toString(); 
+                  var q2fq = params['q'] === undefined || params['q'].toString() == '*:*' ? '*' : params['q'].toString(); 
                   query['q'] = this.config.query.fixed['q'];
                   
                   if(params.hasOwnProperty('q'))
