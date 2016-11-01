@@ -10,9 +10,9 @@
 
   It is a good idea to list the modules that your application depends on in the package.json in the project root
  */
-var util = require('util'), 
-  solr = require('solr-client'),
+var solr = require('solr-client'),
   Q = require('q'),
+  sprintf = require('sprintf-js').sprintf,
   iipproxy = require('./connectors/iip'),
   SolrConnector = require('./connectors/solr');
 
@@ -29,7 +29,8 @@ var util = require('util'),
   we specify that in the exports of this module that 'hello' maps to the function named 'hello'
  */
 module.exports = {
-  getimgbyrefnum: getimgbyrefnum
+  getimgbyrefnum: getimgbyrefnum,
+  getrandomimg: getrandomimg
 };
 
 /*
@@ -38,10 +39,59 @@ module.exports = {
   Param 1: a handle to the request object
   Param 2: a handle to the response object
  */
+function getrandomimg(req, res) {
+  
+  var query = {};
+    
+  var config =  {
+        id: 'hirespictures',
+        host: 'csdev-seb-02',
+        port: 8983,
+        core: '/solr/dev_DAM_PIC',
+        query:{
+          def: {                                   
+            'wt': 'json',
+            'indent': true,
+            'json.nl': 'map'            
+          },
+          fixed: {
+            q: "value:[* TO *] AND (invnumber:kk* OR invnumber:km*)",
+            start: Math.floor((Math.random() * 4000)),
+            rows: 1,            
+            'fl': 'id, invnumber'
+          }
+          //exclude: ['fq']
+        }
+    };
+      
+  var solrconnector = new SolrConnector(config);
+  
+  solrconnector.handler(query, true) 
+      .then(function(solrResponse){
+        if (solrResponse.response.numFound > 0) {
+          var req_bounce = {swagger:{params:{refnum:{value:0},size:{value:0}}}};                    
+          req_bounce.swagger.params.refnum.value = solrResponse.response.docs[0].id;
+          
+          getimgbyrefnum(req_bounce, res); 
+                                                         
+        } else {
+          console.log("getrandomimg - image not found :", query.q);
+          var error = {error: "getrandomimg - image not found : " + query.q, status: 404};
+          //return res.status(404).json(error);
+          throw error;
+        }        
+      })
+      .catch(function (error) {        
+        console.log(error);
+        res.status(error.status).json(error);        
+      });  
+  
+}
+
 function getimgbyrefnum(req, res) {
   
   var query = {
-        q: req.swagger.params.refnum.value ? util.format('invnumber:%s', req.swagger.params.refnum.value.toLowerCase()) : '*:*',
+        q: req.swagger.params.refnum.value ? sprintf('invnumber:%1$s OR id:%1$s', req.swagger.params.refnum.value.toLowerCase()) : '*:*',
         start:0,
         rows:1        
     };

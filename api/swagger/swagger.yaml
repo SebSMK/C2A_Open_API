@@ -1,11 +1,11 @@
 swagger: "2.0"
 info:
-  version: "1.0.4"
+  version: "1.0.4 - c5"
   title: SMK API
 # during dev, should point to your local machine
-# host: 172.20.1.203:10011
+host: 172.20.1.203:10011
 # in production, should point to the front end server
-host: demoapi.smk.dk
+# host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access to artworks' data
@@ -13,6 +13,8 @@ tags:
   description: Access to artworks' images
 - name: Keywords
   description: Access to website's search keywords statistics
+- name: Prototype
+  description: Feel free to experiment, but don't build your high-end apps on it!
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -102,7 +104,14 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /images:
+  /images/{refnum}:
+    parameters:
+    - name: refnum
+      in: path
+      description: Reference number of the requested artwork (e.g. kms1)
+      required: true
+      type: string
+    
     x-swagger-router-controller: get_image
     get:
       tags:
@@ -113,11 +122,6 @@ paths:
       - application/json
       operationId: getimgbyrefnum
       parameters:
-        - name: refnum
-          in: query
-          description: Reference number of the requested artwork (e.g. kms1)
-          required: true
-          type: string
         - name: size
           in: query
           description: Size of the resulting image ("thumb", "medium", "large")
@@ -134,6 +138,81 @@ paths:
           description: Image server error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
+  /images/rand/{offset}:
+    parameters:
+    - name: offset
+      in: path
+      description: Reference number of the requested artwork (e.g. kms1)
+      required: true
+      type: string
+    
+    x-swagger-router-controller: get_image
+    get:
+      tags:
+      - Images
+      summary: Get random image of an artwork
+      description: Returns jpeg of a random artwork
+      consumes:
+      - application/json
+      operationId: getrandomimg
+      parameters:
+        - name: size
+          in: query
+          description: Size of the resulting image ("thumb", "medium", "large")
+          required: false
+          default: "thumb"
+          type: string
+      produces:
+      - image/jpeg
+      - application/json
+      responses:
+        '200':
+          description: OK
+        default:
+          description: Image server error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
+  /images/list/:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: get_hires_list
+    get:
+      tags:
+      - Images
+      summary: Get all artworks with a high res picture
+      description: Returns artwork's id an refnum
+      # used as the method name of the controller
+      operationId: gethireslist
+      parameters:
+        - name: sort
+          in: query
+          description: Field on which the results will be sorted (e.g. "created desc" --> sorted after descendent creation date or "size asc" --> sorted after ascendent size)
+          required: false
+          default: "created desc"
+          type: string
+        - name: start
+          in: query
+          description: Specifies an offset (by default, 0) into the responses at which content should begin been displayed.
+          default: 0
+          required: false
+          type: integer
+        - name: rows
+          in: query
+          description: Controls how many rows of responses are displayed at a time (default value, 10)
+          required: false
+          default: 10
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrBasicResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
+  
   /zoom:
     x-swagger-router-controller: get_zoom
     get:
