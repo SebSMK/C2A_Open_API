@@ -14,7 +14,7 @@ tags:
 - name: Keywords
   description: Access to website's search keywords statistics
 - name: Prototype
-  description: Feel free to experiment, but don't build your high-end apps on it!
+  description: Feel free to experiment, but don't build your high-end apps on those!
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -25,12 +25,45 @@ schemes:
 # format of bodies a client can send (Content-Type)
 consumes:
   - application/json
+  - application/octet-stream
 # format of the responses to the client (Accepts)
 produces:
   - application/json
   - image/jpeg
   - text/html
 paths:
+  /proto/ocr/:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: post_proto_ocr
+    post:
+      tags:
+      - Prototype
+      summary: Post the image of an artwork label, get artwork's data back 
+      description: OCR of an artwork label - returns artwork's notice
+      # used as the method name of the controller
+      operationId: post2OCR
+      parameters:
+        - name: imageB64
+          in: body
+          description: Base64 encoded image
+          required: true
+          schema:
+              title: Base64 encoded image string
+              type: string
+              default: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAAAAACPAi4CAAACOklEQVRYw+3VT0gUYRzG8ccNNliIQhT00NJhD+7BwOjPLeZaGFEIEaa4hRQd4gWhU2RghyAQCaKlqxhECy0RgoomBhFFRJdAoj9CYSnEmEpLbX47vDM77+xeO3SY5/a+O++H953f752VkiRJkiTJP8/eW282+bV0v7tJUpcJ0i4pHQ7ydrpL2m0nstHydJEwM62SCQdnJHWFgwE7baSbAKxkImCCKM9TEXBDUqEBSK8AcCVa7+HmdAQ8ljTWAPQAsNEcAXcAuNTZV7GrasAnSfMNwDQAY84bnAJYknQPYNUCbwF2SD7w3gWyWwBV5xVqDmBtuzTs+77/3QKP1oFD2gN8mXeBEQDG3RqOA/DsSDoYG4DyAjCo40DJBYY+A9DpAheCU/540L8zAkaBMQ0Dl11gFoDJWBdlPtRKsHk77INyLzCnh8BhF9gCwIv3Ye5VVMVvBwKgA1jRR6hmXMCmu66Tt52a/RP+9nWXBVLrQA54LRdYtO3WeBta+ksVKwxZQAvANaAYA65uNJ7B8zzP2y+1lAAoB8Ao8A4YiAHmrr0zLvAzbKR2AJ4GQG9wpnwc2GdnDzrAIkC1TWoFYCoAOuyTflMc0Au7Twew9+Vl34knAFwPgNQ6ANOqAwrhxmrJ/3ZvYyUbAFoAYKQeyPgATDhbcCvMOYWA3dnReiCYr+Yc4exauHz5pGpAHwAtDUDePlp0C9E8NLMKy5ODmfCbeExqM8aY85J64t9EFYwxxlxM/kqSJEmS5H/LXw/tL7IM9UBNAAAAAElFTkSuQmCC'
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/MsOcrResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
+    
+
   /tags:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_tags
@@ -330,6 +363,8 @@ paths:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
 definitions:
+  MsOcrResponse:
+    type: object
   HtmlResponse:
     type: string
   SolrFacetResponse:
