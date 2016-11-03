@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "1.0.4 - c5"
+  version: "1.0.6 - c5"
   title: SMK API
 # during dev, should point to your local machine
 host: 172.20.1.203:10011
@@ -359,6 +359,35 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
+  /solr:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: post_solr_query
+    post:
+      tags:
+      - Artworks
+      summary: Search the collection - solr query
+      description: Advanced users - Returns artwork(s)' notice matching the solr query
+      # used as the method name of the controller
+      operationId: postnoticesolrsearch
+      parameters:
+        - name: body
+          in: body
+          description: A solr compliant json-formatted query - Example given here returns the fields "id, title_first,object_production_date_latest,object_production_date_earliest" on all artworks which notice contains the word "matisse", as well as associated facet results on "artist_surname_firstname" field) - e.g. {"q":"matisse","start":0,"rows":5,"fl":"id, title_first,object_production_date_latest,object_production_date_earliest","facet":"true","facet.limit":-1,"facet.mincount":1,"facet.field":"artist_surname_firstname","defType":"edismax","qf":"collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5"}
+
+          required: true
+          schema:
+            $ref: "#/definitions/SolrBasicRequest"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SolrCollectionSpaceBasicResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
@@ -473,6 +502,12 @@ definitions:
         type: array
         items:
           type: string
+  SolrBasicRequest:
+    required:
+      - q
+    properties:
+      q:
+        type: string
   SolrBasicResponse:
     required:
       - responseHeader
