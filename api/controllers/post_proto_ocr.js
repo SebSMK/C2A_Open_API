@@ -5,7 +5,8 @@
 */
 
 var rp = require('request-promise'),
-atob = require('atob');
+atob = require('atob'),
+SolrConnector = require('./connectors/solr');
 
 
 function post2OCR(req, res) {
@@ -36,8 +37,50 @@ function post2OCR(req, res) {
       var qsolr = extractMSOCRResult(JSON.parse(parsedBody));
       //res.json(JSON.parse('{"res":"' + qsolr.join() + '"}'));      
       
-      
-      var smkOptions = {
+      var solrOptions =  {
+        id: 'CollectionSpace',        
+        host: 'csdev-seb-02',
+        port: 8983,
+        core: '/solr/dev_DAM_SAFO',
+        query:{
+          def: {                                   
+            'wt': 'json',
+            'indent': true,
+            'json.nl': 'map'            
+          },
+          fixed: {
+            //'q': '%1$s',            
+            //'qf': 'collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5',            
+            //'fl': '*, score',
+            //'fl': 'id, artist*, title*, obj*, mat*, score', 
+            //'defType': 'edismax'
+          }
+          //exclude: ['fq']
+        },
+        // proxy
+        proxy:{
+      	   options: {
+      	      validHttpMethods: ['GET'],
+      	      invalidParams: ['qt', 'stream']
+      	    },
+            mapping:{
+              //'solr-example/dev_SAFO/select': connector_CollectionSpace
+            }    
+        }
+    };
+    
+    var solrconnector = new SolrConnector(solrOptions);
+    var params = {"q": qsolr.join(" "),
+                  "start":0,
+                  "rows":1,
+                  "fl":"id, title_first",
+                  "defType":"edismax",
+                  "qf":"collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5"
+                };
+    return solrconnector.handler(params, true) 
+    
+    /*  
+     var smkOptions = {
         method: 'POST',
         uri: 'http://172.20.1.203:10011/api/solr',
         
@@ -48,11 +91,12 @@ function post2OCR(req, res) {
       };
       
       return rp(smkOptions);
+    */
          
   })
-  .then(function (parsedBody) {
-      console.log(parsedBody);
-      res.json(JSON.parse(parsedBody));     
+  .then(function (solrRes) {
+      console.log(solrRes);
+      res.json(solrRes);     
    })  
   .catch(function (error) {        
     console.log(error);
