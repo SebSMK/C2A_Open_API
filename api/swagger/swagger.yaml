@@ -171,6 +171,35 @@ paths:
           description: Image server error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
+  /images/iiif/{refnum}:
+    parameters:
+    - name: refnum
+      in: path
+      description: Reference number of the requested artwork (e.g. kms1)
+      required: true
+      type: string
+    
+    x-swagger-router-controller: get_image_iiif
+    get:
+      tags:
+      - Images
+      summary: Get artworks' iiif informations
+      description: Returns iiif informations of a given artwork
+      consumes:
+      - application/json
+      operationId: getiiifref
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/IiifInfo"
+            
+        default:
+          description: Image server error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /images/rand/{offset}:
     parameters:
     - name: offset
@@ -396,6 +425,12 @@ definitions:
     type: object
   HtmlResponse:
     type: string
+  IiifInfo:
+    required:
+      - "@id"
+    properties:
+      "@id":
+        type: string
   SolrFacetResponse:
     required:
       - responseHeader
