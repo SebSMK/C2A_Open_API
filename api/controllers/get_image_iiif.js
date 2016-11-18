@@ -38,6 +38,7 @@ function getiiifref(req, res) {
         start:0,
         rows:1        
     };
+  var iiifid;
     
   var config = {        
         id: 'damlit',
@@ -67,13 +68,7 @@ function getiiifref(req, res) {
           // get pyr image path
           var pyrfilePath = solrResponse.response.docs[0].value; 
           
-          return pyrfilePath;
-          /*                               
-          var iiifjson = config.iiifjson;
-          iiifjson["@id"] = sprintf(iiifjson["@id"], encodeURIComponent(pyrfilePath));                 
-          
-          res.json(iiifjson);
-          */
+          return pyrfilePath;          
                                                          
         } else {
           console.log("getimgbyrefnum - image not found :", query.q);
@@ -82,20 +77,24 @@ function getiiifref(req, res) {
           throw error;
         }        
       })
+      
       .then(function(pyrfilePath){
         var getoptions = {
           method: 'GET',
           uri: sprintf(config.iiifserver + '/info.json', encodeURIComponent(pyrfilePath)),          
         };          
-        
+        iiifid = sprintf(config.iiifserver, encodeURIComponent(pyrfilePath));
         return rp(getoptions);
       
       })
       .then(function(iiifjson){
-        res.json(JSON.parse(iiifjson));       
+        var parsed = JSON.parse(iiifjson);
+        parsed["@id"] = iiifid;
+        console.log("getiiifref - iiif says:", JSON.stringify(parsed, 4));
+        res.json(parsed);       
       })
       .catch(function (error) {        
-        console.log(error);
+        console.error(error);
         res.status(error.status).json(error);        
       });  
   
