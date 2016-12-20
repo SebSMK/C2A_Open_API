@@ -303,6 +303,34 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
+  /social:
+    x-swagger-router-controller: get_social
+    get:
+      tags:
+      - Artworks
+      summary: Zoom in artworks
+      description: Returns html page with the given artwork
+      consumes:
+      - application/json
+      operationId: getsocial
+      parameters:
+        - name: refnum
+          in: query
+          description: Reference number of the requested artwork (e.g. kms3123)
+          required: true
+          type: string
+      produces:
+      - text/html
+      - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/HtmlResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /artworks:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_notice
