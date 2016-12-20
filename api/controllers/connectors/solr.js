@@ -19,7 +19,7 @@ SolrConnector = (function(){
      **/
     
     SolrConnector.prototype.queryhandler = function(params, use_def_query){
-       var query = {};
+       var query = {};  
        if (use_def_query) {                   
             
             // set variables elements of the query
@@ -56,7 +56,7 @@ SolrConnector = (function(){
        
         var getquery = queryhandler !== undefined ? queryhandler : self.queryhandler; 
         query = getquery.call(self, params, use_def_query);
-        
+               
         console.log(query);
         
         client.get('select', query, function(err, obj) {

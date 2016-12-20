@@ -71,7 +71,8 @@ function getrandomimg(req, res) {
         if (solrResponse.response.numFound > 0) {
           var req_bounce = {swagger:{params:{refnum:{value:0},size:{value:0}}}};                    
           req_bounce.swagger.params.refnum.value = solrResponse.response.docs[0].id;
-          
+          req_bounce.swagger.params.size.value = req.swagger.params.size.value;
+
           getimgbyrefnum(req_bounce, res); 
                                                          
         } else {

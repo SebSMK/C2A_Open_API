@@ -75,7 +75,8 @@ function post2OCR(req, res) {
                   "rows":1,
                   "fl":"id, title_first",
                   "defType":"edismax",
-                  "qf":"collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5"
+                  //"qf":"collectorExact1^150 collectorExact2^30 collectorExact3^20 collector1^20 collector2^15 collector3^10 collector4^5"
+                  "qf":"collector2OCR"
                 };
     return solrconnector.handler(params, true) 
     

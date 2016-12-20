@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "1.0.6 - c5"
+  version: "1.0.7 - c5"
   title: SMK API
 # during dev, should point to your local machine
 host: 172.20.1.203:10011
@@ -542,7 +542,7 @@ definitions:
       - q
     properties:
       q:
-        type: string
+        type: [string, object]
   SolrBasicResponse:
     required:
       - responseHeader
