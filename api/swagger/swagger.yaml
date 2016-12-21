@@ -3,9 +3,9 @@ info:
   version: "1.0.7"
   title: SMK API
 # during dev, should point to your local machine
-host: 172.20.1.203:10011
+#host: 172.20.1.203:10011
 # in production, should point to the front end server
-# host: demoapi.smk.dk
+host: demoapi.smk.dk
 tags:
 - name: Artworks
   description: Access to artworks' data
@@ -303,22 +303,23 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-  /social:
+  /prototype/social/{refnum}:
+    parameters:
+    - name: refnum
+      in: path
+      description: Reference number of the requested artwork (e.g. kms1)
+      required: true
+      type: string
+  
     x-swagger-router-controller: get_social
     get:
       tags:
-      - Artworks
-      summary: Zoom in artworks
-      description: Returns html page with the given artwork
+      - Prototype
+      summary: Link to social medias
+      description: Returns a html page to the given artwork
       consumes:
       - application/json
       operationId: getsocial
-      parameters:
-        - name: refnum
-          in: query
-          description: Reference number of the requested artwork (e.g. kms3123)
-          required: true
-          type: string
       produces:
       - text/html
       - application/json
