@@ -12,7 +12,8 @@
  */
 var solr = require('solr-client'),
   rp = require('request-promise'),
-  sprintf = require('sprintf-js').sprintf,  
+  sprintf = require('sprintf-js').sprintf,
+  allconf = require('./config/config.js'), 
   SolrConnector = require('./connectors/solr');
 
 /*
@@ -39,25 +40,8 @@ function getiiifref(req, res) {
         rows:1        
     };
   var iiifid;
-    
-  var config = {        
-        id: 'damlit',
-        host: 'csdev-seb-02',
-        port: 8983,
-        core: '/solr/dev_DAM_PIC',
-        query:{
-          def: {                                   
-            'wt': 'json',
-            'indent': true,
-            'json.nl': 'map'            
-          },
-          fixed: {
-            'fl': 'value'
-          },
-          exclude: ['fq']
-        },
-        iiifserver: "http://iip.smk.dk/iiif/%s"
-    };
+     
+  var config = allconf.get_image_iiif;
             
   var solrconnector = new SolrConnector(config);
   
