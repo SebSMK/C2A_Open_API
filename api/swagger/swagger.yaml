@@ -1,9 +1,9 @@
 swagger: "2.0"
 info:
-  version: "1.0.8"
-  title: SMK API
+  version: "0.1"
+  title: C2A API
 # during dev, should point to your local machine
-host: 172.20.1.203:10011
+host: 52.24.195.222:10011
 # in production, should point to the front end server
 #host: demoapi.smk.dk
 tags:
@@ -32,6 +32,36 @@ produces:
   - image/jpeg
   - text/html
 paths:
+  /proto/videntifier/recogn/:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: post_proto_videntifier
+    post:
+      tags:
+      - Prototype
+      summary: Post image of an artwork, get artwork's id back 
+      description: Image recognition of an artwork - returns artwork's id
+      # used as the method name of the controller
+      operationId: videntifier_recogn
+      parameters:
+        - name: imagePath
+          in: body
+          description: path of the image to recognize
+          required: true
+          schema:
+              title: path of the image
+              type: string
+              default: '/tmp/hires/iipsrv.jpg'
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/VidentifierResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/SolrErrorResponse"
   /proto/ocr/:
     # binds a127 app logic to a route
     x-swagger-router-controller: post_proto_ocr
@@ -62,7 +92,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/SolrErrorResponse"
-
   /tags:
     # binds a127 app logic to a route
     x-swagger-router-controller: get_tags
@@ -451,6 +480,8 @@ paths:
 definitions:
   MsOcrResponse:
     type: object
+  VidentifierResponse:
+    type: string
   HtmlResponse:
     type: string
   IiifInfo:
