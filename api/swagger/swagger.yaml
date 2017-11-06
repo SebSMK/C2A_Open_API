@@ -15,6 +15,10 @@ tags:
   description: Access to website's search keywords statistics
 - name: Prototype
   description: Feel free to experiment, but don't build your high-end apps on those!
+- name: Recognition
+  description: Image recognition 
+- name: Videntifier
+  description: Videntifier API
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -26,19 +30,51 @@ schemes:
 consumes:
   - application/json
   - application/octet-stream
-  - text/plain
 # format of the responses to the client (Accepts)
 produces:
   - application/json
   - image/jpeg
   - text/html
 paths:
+  /proto/videntifier/insert/:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: post_proto_videntifier
+    post:
+      tags:
+      - Prototype
+      - Recognition
+      - Videntifier
+      summary: Insert the image of an artwork in the database 
+      description: Insertion of an image
+      # used as the method name of the controller
+      operationId: videntifier_insert
+      parameters:
+        - name: imagePath
+          in: body
+          description: path of the image to insert
+          schema:
+              $ref: "#/definitions/VidentifierPostInsert"
+              #default: '/tmp/hires/nils_morten.jpg'
+          
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/VidentifierResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/VidentifierErrorResponse"
   /proto/videntifier/recogn/:
     # binds a127 app logic to a route
     x-swagger-router-controller: post_proto_videntifier
     post:
       tags:
       - Prototype
+      - Recognition
+      - Videntifier
       summary: Post image of an artwork, get artwork's id back 
       description: Image recognition of an artwork - returns artwork's id
       # used as the method name of the controller
@@ -49,7 +85,7 @@ paths:
           description: path of the image to recognize
           required: true
           schema:
-              $ref: "#/definitions/VidentifierRecogintionRequest"
+              $ref: "#/definitions/VidentifierPostRecognition"
               #title: path of the image
               #type: string
               #default: '/tmp/hires/iipsrv.jpg'
@@ -63,13 +99,14 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/SolrErrorResponse"
+            $ref: "#/definitions/VidentifierErrorResponse"
   /proto/ocr/:
     # binds a127 app logic to a route
     x-swagger-router-controller: post_proto_ocr
     post:
       tags:
       - Prototype
+      - Recognition
       summary: Post the image of an artwork label, get artwork's data back 
       description: OCR of an artwork label - returns artwork's notice
       # used as the method name of the controller
@@ -604,12 +641,22 @@ definitions:
     properties:
       q:
         type: [string, object]
-  VidentifierRecogintionRequest:
+  VidentifierPostRecognition:
     required:
       - path
     properties:
       path:
         type: [string]
+  VidentifierPostInsert:
+    required:
+      - path
+      - metadata
+    properties:
+      path:
+        type: [string]
+      metadata:
+        type: [object]
+        additionalProperties: true
   SolrBasicResponse:
     required:
       - responseHeader
@@ -636,6 +683,12 @@ definitions:
       message:
         type: string
   SolrErrorResponse:
+    required:
+      - error
+    properties:
+      error:
+        type: object
+  VidentifierErrorResponse:
     required:
       - error
     properties:

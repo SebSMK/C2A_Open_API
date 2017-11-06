@@ -3,6 +3,7 @@
     videntifier:{
       authorization: 'I0IcuMSxgrtvRZXO6iMb',
       uri:{
+        insert: 'https://api.videntifier.com/api/v1/insert',
         recognition: 'https://api.videntifier.com/api/v1/query?include_locations=true'
       }
     },
