@@ -49,9 +49,9 @@ paths:
       # used as the method name of the controller
       operationId: videntifier_insert
       parameters:
-        - name: imagePath
+        - name: imagePathOrUrl
           in: body
-          description: path of the image to insert
+          description: path/url and metadata of the image to insert
           schema:
               $ref: "#/definitions/VidentifierPostInsert"
               #default: '/tmp/hires/nils_morten.jpg'
@@ -648,11 +648,10 @@ definitions:
       path:
         type: [string]
   VidentifierPostInsert:
-    required:
-      - path
-      - metadata
-    properties:
+     properties:
       path:
+        type: [string]
+      url:
         type: [string]
       metadata:
         type: [object]
