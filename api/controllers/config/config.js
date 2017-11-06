@@ -1,5 +1,12 @@
  var config = {
  
+    videntifier:{
+      authorization: 'I0IcuMSxgrtvRZXO6iMb',
+      uri:{
+        recognition: 'https://api.videntifier.com/api/v1/query?include_locations=true'
+      }
+    },
+ 
     get_image_iiif:{        
         id: 'damlit',
         host: 'csdev-seb-02',

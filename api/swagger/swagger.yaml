@@ -26,6 +26,7 @@ schemes:
 consumes:
   - application/json
   - application/octet-stream
+  - text/plain
 # format of the responses to the client (Accepts)
 produces:
   - application/json
@@ -48,9 +49,10 @@ paths:
           description: path of the image to recognize
           required: true
           schema:
-              title: path of the image
-              type: string
-              default: '/tmp/hires/iipsrv.jpg'
+              $ref: "#/definitions/VidentifierRecogintionRequest"
+              #title: path of the image
+              #type: string
+              #default: '/tmp/hires/iipsrv.jpg'
       responses:
         "200":
           description: Success
@@ -602,6 +604,12 @@ definitions:
     properties:
       q:
         type: [string, object]
+  VidentifierRecogintionRequest:
+    required:
+      - path
+    properties:
+      path:
+        type: [string]
   SolrBasicResponse:
     required:
       - responseHeader
