@@ -692,4 +692,4 @@ definitions:
       - error
     properties:
       error:
-        type: object
+        type: string
