@@ -19,6 +19,8 @@ tags:
   description: Image recognition 
 - name: Videntifier
   description: Videntifier API
+- name: HiRes
+  description: HiRes API
 # basePath prefixes all resource paths 
 basePath: /api
 # 
@@ -36,6 +38,36 @@ produces:
   - image/jpeg
   - text/html
 paths:
+  /proto/hires/insert/:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: post_hires
+    post:
+      tags:
+      - Prototype
+      - HiRes
+      summary: Convert the image to pyr format and insert it into the database 
+      description: Conversion / Insertion of an image
+      # used as the method name of the controller
+      operationId: test_converter
+      parameters:
+        - name: imagePathOrUrl
+          in: body
+          description: path/url and metadata of the image to insert
+          schema:
+              $ref: "#/definitions/HiResPostInsert"
+              #default: '/tmp/hires/nils_morten.jpg'
+          
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/HiResResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/HiResErrorResponse"
   /proto/videntifier/insert/:
     # binds a127 app logic to a route
     x-swagger-router-controller: post_proto_videntifier
@@ -521,6 +553,8 @@ definitions:
     type: object
   VidentifierResponse:
     type: string
+  HiResResponse:
+    type: string
   HtmlResponse:
     type: string
   IiifInfo:
@@ -656,6 +690,21 @@ definitions:
       metadata:
         type: [object]
         additionalProperties: true
+  HiResPostInsert:
+     required:
+     - path
+     - invnumber
+     - institution
+     properties:
+      path:
+        type: [string]
+      invnumber:
+        type: [string]
+      institution:
+        type: [string]
+      metadata:
+        type: [object]
+        additionalProperties: true
   SolrBasicResponse:
     required:
       - responseHeader
@@ -688,6 +737,12 @@ definitions:
       error:
         type: object
   VidentifierErrorResponse:
+    required:
+      - error
+    properties:
+      error:
+        type: string
+  HiResErrorResponse:
     required:
       - error
     properties:

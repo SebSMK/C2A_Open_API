@@ -1,5 +1,5 @@
 {
-  "name": "SMKs_Open_API",
+  "name": "C2As_Open_API",
   "version": "0.0.1",
   "private": true,
   "description": "Swagger API Project",
@@ -8,18 +8,14 @@
   "license": "",
   "main": "app.js",
   "dependencies": {
-    "atob": "^2.0.3",
-    "blob-util": "^1.2.1",
     "express": "^4.12.3",
     "q": "^1.4.1",
     "request": "^2.74.0",
     "request-promise": "^4.1.1",
-    "solr-client": "^0.6.0",
     "sprintf": "^0.1.5",
     "sprintf-js": "^1.0.3",
     "swagger-express-mw": "^0.1.0",
-    "swagger-tools": "^0.10.1",
-    "w3c-blob": "0.0.1"
+    "swagger-tools": "^0.10.1"
   },
   "devDependencies": {
     "should": "^7.1.0",
