@@ -13,11 +13,15 @@ var rp = require('request-promise');
 var fs = require('fs');
 var config = require('./config/config');
 
-var converter = require ('pyr_converter').insert;
+var insert = require ('pyr_converter').insert;
 
 function test_converter(req, res) {  
-  if (req.body.path == undefined && req.body.url == undefined ) 
-    res.status("500").json('{"error":"path/url not defined"}');
+  if (req.body.path == undefined ) 
+    res.status("500").json('{"error":"path not defined"}');
+  if (req.body.invnumber == undefined ) 
+    res.status("500").json('{"error":"invnumber not defined"}');
+  if (req.body.institution == undefined ) 
+    res.status("500").json('{"error":"institution not defined"}');
   
   /***/
   var doc = {};
@@ -25,7 +29,7 @@ function test_converter(req, res) {
   doc['invnumber'] = req.body.invnumber;
   doc['institution'] = req.body.institution;
   
-  converter(doc)
+  insert(doc)
   .then(function (parsedBody) {
       console.log(parsedBody);
       res.json(parsedBody);     
