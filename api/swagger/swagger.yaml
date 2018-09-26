@@ -48,14 +48,14 @@ paths:
       summary: Convert the image to pyr format and insert it into the database 
       description: Conversion / Insertion of an image
       # used as the method name of the controller
-      operationId: test_converter
+      operationId: hires_insert
       parameters:
         - name: imagePathOrUrl
           in: body
           description: path/url and metadata of the image to insert
           schema:
               $ref: "#/definitions/HiResPostInsert"
-              #default: '/tmp/hires/nils_morten.jpg'
+              #default: '/mnt/hires/nils_morten.jpg'
           
       responses:
         "200":
@@ -86,7 +86,7 @@ paths:
           description: path/url and metadata of the image to insert
           schema:
               $ref: "#/definitions/VidentifierPostInsert"
-              #default: '/tmp/hires/nils_morten.jpg'
+              #default: '/mnt/hires/nils_morten.jpg'
           
       responses:
         "200":
@@ -120,7 +120,7 @@ paths:
               $ref: "#/definitions/VidentifierPostRecognition"
               #title: path of the image
               #type: string
-              #default: '/tmp/hires/iipsrv.jpg'
+              #default: '/mnt/hires/iipsrv.jpg'
       responses:
         "200":
           description: Success

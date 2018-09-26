@@ -12,6 +12,11 @@ $ sudo apt-get install graphicsmagick
 	
 The remaining instructions don't require *root* so switch to the *node* (or any non-root) user.
 
+Installing MongoDB
+
+https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-16-04
+
+
 #### Package managers
 Npm is required for managing the *node.js* libraries which aren't included in the source.
 
